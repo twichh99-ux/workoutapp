@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Manuel Workout">
+<meta name="theme-color" content="#080808">
+<title>Manuel · Workout</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* PASSWORD */
+#pw{position:fixed;inset:0;background:#080808;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;font-family:'DM Sans',sans-serif;}
+#pw-ico{font-size:52px;margin-bottom:14px;}
+#pw-title{font-family:'Bebas Neue',sans-serif;font-size:40px;color:#F0F0F0;letter-spacing:.03em;margin-bottom:4px;}
+#pw-sub{font-family:'DM Mono',monospace;font-size:10px;color:#585858;letter-spacing:.14em;text-transform:uppercase;margin-bottom:40px;}
+#pw-box{width:100%;max-width:320px;display:flex;flex-direction:column;gap:8px;}
+#pw-lbl{font-family:'DM Mono',monospace;font-size:9px;color:#585858;text-transform:uppercase;letter-spacing:.1em;}
+#pw-inp{background:#191919;border:1px solid #272727;border-radius:12px;padding:14px 16px;color:#F0F0F0;font-size:16px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .2s;font-family:'DM Sans',sans-serif;}
+#pw-inp:focus{border-color:#2ECC71;}
+#pw-err{font-family:'DM Mono',monospace;font-size:9px;color:#e05555;text-align:center;display:none;}
+#pw-btn{padding:14px;border-radius:12px;background:#2ECC71;border:none;color:#000;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:opacity .15s;}
+#pw-btn:active{opacity:.8;}
+
+/* APP — hidden until password */
+#app{display:none;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,44px);}
+#app.show{display:flex;}
+
+:root{
+  --bg:#080808;--s1:#111;--s2:#191919;--s3:#222;--bd:#272727;
+  --w:#F0F0F0;--g:#585858;--lg:#303030;
+  --green:#2ECC71;--gd:rgba(46,204,113,.13);--gb:rgba(46,204,113,.3);
+  --yellow:#F5C518;--yd:rgba(245,197,24,.1);
+  --blue:#4d8ef0;--bld:rgba(77,142,240,.13);
+  --red:#e05555;--rd:rgba(224,85,85,.1);
+  --purple:#a855f7;
+  --sat:env(safe-area-inset-top,44px);
+  --sab:env(safe-area-inset-bottom,34px);
+  --nh:56px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--w);font-family:'DM Sans',sans-serif;position:fixed;width:100%;-webkit-font-smoothing:antialiased;}
+#screens{flex:1;position:relative;overflow:hidden;min-height:0;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .24s,transform .24s;}
+.screen.active{opacity:1;pointer-events:all;transform:none;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nh) + var(--sab) + 24px);scrollbar-width:none;}
+.scroll::-webkit-scrollbar{display:none;}
+#nav{height:calc(var(--nh)+var(--sab));padding-bottom:var(--sab);background:rgba(8,8,8,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bd);display:flex;flex-shrink:0;z-index:100;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;cursor:pointer;padding:7px 2px 3px;}
+.nb:active{opacity:.5;}
+.nb-i{font-size:19px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.nb.active .nb-i{transform:scale(1.2);}
+.nb-l{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.05em;text-transform:uppercase;color:var(--g);transition:color .18s;}
+.nb.active .nb-l{color:var(--green);}
+.nb-d{width:4px;height:4px;border-radius:50%;background:var(--green);opacity:0;transform:scale(0);transition:opacity .18s,transform .2s cubic-bezier(.34,1.56,.64,1);}
+.nb.active .nb-d{opacity:1;transform:scale(1);}
+.px{padding:0 20px;}
+.ph{padding:13px 20px 8px;flex-shrink:0;background:var(--bg);}
+.pe{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+.pt{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:.95;}
+.pt span{color:var(--green);}
+.ps{font-size:10px;color:var(--g);margin-top:3px;}
+.sl{font-family:'DM Mono',monospace;font-size:8px;color:var(--lg);text-transform:uppercase;letter-spacing:.13em;margin:14px 0 7px;}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:8px;}
+.info{background:var(--gd);border:1px solid var(--gb);border-radius:10px;padding:10px;margin-bottom:10px;font-size:10px;color:rgba(150,240,190,.9);line-height:1.5;}
+.warn{background:var(--yd);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:10px;font-size:10px;color:var(--yellow);line-height:1.5;margin-bottom:10px;}
+.avoid-g{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px;}
+.avoid-i{background:var(--rd);border:1px solid rgba(224,85,85,.15);border-radius:8px;padding:6px 9px;font-size:11px;color:#e07070;}
+/* WORKOUT */
+.wtabs{display:flex;gap:6px;overflow-x:auto;padding:0 20px 2px;flex-shrink:0;margin-bottom:8px;scrollbar-width:none;}
+.wtabs::-webkit-scrollbar{display:none;}
+.wt{flex-shrink:0;padding:7px 14px;border-radius:9px;background:var(--s2);border:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--g);cursor:pointer;white-space:nowrap;transition:all .18s;}
+.wt.active{background:var(--green);border-color:var(--green);color:#000;font-weight:600;}
+.wt:active{opacity:.7;}
+.wdays{position:relative;flex:1;overflow:hidden;}
+.wd{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 20px calc(var(--nh)+var(--sab)+24px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;transform:translateX(14px);scrollbar-width:none;}
+.wd::-webkit-scrollbar{display:none;}
+.wd.active{opacity:1;pointer-events:all;transform:none;}
+.hero{border-radius:14px;padding:15px;margin-bottom:8px;position:relative;overflow:hidden;background:var(--s1);border:1px solid var(--bd);}
+.hero.pull{background:linear-gradient(135deg,#0c1e13,#0f1a11);border-color:var(--gb);}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(46,204,113,.07),transparent 70%);pointer-events:none;}
+.htag{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.11em;text-transform:uppercase;padding:3px 8px;border-radius:5px;margin-bottom:7px;}
+.tpu{background:var(--bld);color:var(--blue);}
+.tpl{background:var(--gd);color:var(--green);}
+.tle{background:var(--yd);color:var(--yellow);}
+.htitle{font-family:'Bebas Neue',sans-serif;font-size:25px;line-height:1;margin-bottom:2px;}
+.hsub{font-size:10px;color:var(--g);}
+.fbadge{display:inline-flex;align-items:center;gap:4px;margin-top:7px;background:var(--gd);border:1px solid var(--gb);border-radius:6px;padding:3px 9px;font-family:'DM Mono',monospace;font-size:8px;color:var(--green);letter-spacing:.06em;}
+.strip{display:flex;gap:9px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:7px;}
+.si{font-size:14px;flex-shrink:0;margin-top:1px;}
+.sl2{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.09em;margin-bottom:2px;}
+.warm{color:var(--yellow);}
+.cool{color:var(--blue);}
+.stxt{font-size:10px;color:var(--g);line-height:1.5;}
+.ol{background:var(--yd);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:10px 12px;margin:8px 0;display:flex;gap:7px;font-size:10px;color:var(--yellow);line-height:1.5;}
+/* EXERCISE */
+.ex{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:7px;}
+.ex.hi{background:linear-gradient(135deg,#0b1a10,#111);border-color:rgba(46,204,113,.3);}
+.exh{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.exn{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--s3);font-family:'DM Mono',monospace;font-size:10px;}
+.ex.hi .exn{background:var(--green);color:#000;}
+.exname{font-size:13px;font-weight:600;line-height:1.2;margin-bottom:2px;}
+.exm{font-size:10px;color:var(--g);}
+.ex.hi .exm{color:rgba(46,204,113,.7);}
+.exs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;}
+.sp{background:var(--s2);border-radius:7px;padding:5px 3px;text-align:center;}
+.ex.hi .sp{background:rgba(0,0,0,.35);}
+.spl{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+.ex.hi .spl{color:rgba(46,204,113,.5);}
+.spv{font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;}
+.extip{font-size:10px;color:var(--g);line-height:1.5;padding:7px 0;border-top:1px solid var(--bd);display:flex;gap:4px;margin-bottom:0;}
+.ex.hi .extip{border-color:rgba(46,204,113,.12);color:rgba(46,204,113,.7);}
+.vbtn{width:100%;margin-top:8px;padding:8px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--blue);cursor:pointer;text-align:left;letter-spacing:.04em;display:flex;align-items:center;gap:6px;transition:all .18s;}
+.ex.hi .vbtn{color:var(--green);border-color:rgba(46,204,113,.3);}
+.vbtn:active{opacity:.7;}
+.vbox{display:none;margin-top:8px;border-radius:9px;overflow:hidden;background:#000;position:relative;padding-top:56.25%;}
+.vbox video{position:absolute;top:0;left:0;width:100%;height:100%;}
+/* FOOD */
+.stog{display:flex;background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.sbt{flex:1;padding:9px 5px;background:transparent;border:none;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--g);cursor:pointer;transition:all .18s;}
+.sbt.active{background:var(--green);color:#000;font-weight:600;}
+.mpl{display:none;}
+.mpl.active{display:block;}
+.mb{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px;margin-bottom:8px;}
+.mt{font-family:'DM Mono',monospace;font-size:8px;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+.mn{font-size:13px;font-weight:600;margin-bottom:6px;}
+.cn{font-size:10px;color:var(--g);margin-bottom:6px;line-height:1.4;}
+.combos{display:flex;flex-direction:column;gap:5px;}
+.combo{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.4;}
+.clbl{font-family:'DM Mono',monospace;font-size:7px;color:var(--green);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.mac{margin-top:9px;padding-top:8px;border-top:1px solid var(--bd);}
+.mr{display:flex;gap:5px;flex-wrap:wrap;}
+.mc{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:7px;color:var(--g);letter-spacing:.04em;}
+.mc.p{border-color:rgba(46,204,113,.3);color:var(--green);}
+.mc.c{border-color:rgba(77,142,240,.3);color:var(--blue);}
+.mc.f{border-color:rgba(245,197,24,.3);color:var(--yellow);}
+.mc.k{border-color:rgba(224,85,85,.3);color:var(--red);}
+/* WATER */
+.wh{background:linear-gradient(135deg,#091525,#0d1a2a);border:1px solid rgba(77,142,240,.25);border-radius:15px;padding:18px;margin-bottom:10px;text-align:center;}
+.wa{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:1;color:var(--blue);margin-bottom:3px;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.wtr{font-size:11px;color:var(--g);margin-bottom:11px;}
+.wbar-t{background:rgba(77,142,240,.12);border-radius:6px;height:8px;overflow:hidden;margin-bottom:11px;}
+.wbar-f{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue),#7ab4ff);transition:width .4s cubic-bezier(.34,1,.64,1);}
+.wgl{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
+.wg{width:35px;height:35px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--s2);border:1px solid var(--bd);cursor:pointer;transition:all .18s;}
+.wg.on{background:rgba(77,142,240,.2);border-color:rgba(77,142,240,.4);}
+.wg:active{transform:scale(.86);}
+.wbtns{display:flex;gap:6px;margin-top:8px;}
+.wadd{flex:1;padding:10px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-weight:500;}
+.wadd:active{opacity:.7;}
+.wrst{width:42px;padding:10px;border-radius:10px;background:var(--s2);border:1px solid var(--bd);color:var(--g);font-size:14px;cursor:pointer;}
+.wts{display:flex;gap:5px;margin-top:7px;}
+.wtb{flex:1;padding:7px;border-radius:8px;background:var(--s2);border:1px solid var(--bd);color:var(--g);font-family:'DM Mono',monospace;font-size:8px;cursor:pointer;letter-spacing:.05em;transition:all .18s;}
+.wtb.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.wli{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-size:11px;margin-bottom:5px;}
+.wlt{font-family:'DM Mono',monospace;font-size:8px;color:var(--g);}
+.wlv{color:var(--blue);font-weight:500;}
+/* CALENDAR */
+.calnav{display:flex;flex-direction:column;gap:7px;padding:0 20px 9px;flex-shrink:0;}
+.calsels{display:flex;gap:5px;}
+.calsel{flex:1;padding:8px 7px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;color:var(--w);font-family:'DM Mono',monospace;font-size:10px;outline:none;-webkit-appearance:none;cursor:pointer;text-align:center;}
+.calsel:focus{border-color:var(--green);}
+.calgob{padding:8px 13px;background:var(--green);border:none;border-radius:9px;color:#000;font-family:'DM Mono',monospace;font-size:8px;font-weight:600;letter-spacing:.06em;cursor:pointer;white-space:nowrap;}
+.calgob:active{opacity:.8;}
+.caltl{display:flex;gap:5px;overflow-x:auto;padding:0 20px 3px;flex-shrink:0;scrollbar-width:none;}
+.caltl::-webkit-scrollbar{display:none;}
+.calday{flex-shrink:0;width:48px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:10px;background:var(--s2);border:1px solid var(--bd);cursor:pointer;transition:all .18s;}
+.calday.today{border-color:var(--green);}
+.calday.sel{background:var(--green);border-color:var(--green);}
+.calday:active{opacity:.7;}
+.cdow{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:var(--g);}
+.calday.sel .cdow{color:#000;}
+.cnum{font-family:'Bebas Neue',sans-serif;font-size:19px;line-height:1;color:var(--w);}
+.calday.sel .cnum{color:#000;}
+.calday.today:not(.sel) .cnum{color:var(--green);}
+.cdot{width:4px;height:4px;border-radius:50%;background:transparent;}
+.calday.has .cdot{background:var(--blue);}
+.calday.sel .cdot{background:#000;}
+.ddet{margin:8px 20px 0;background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:13px;}
+.ddate{font-family:'DM Mono',monospace;font-size:8px;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px;}
+.dstat{background:var(--s2);border-radius:8px;padding:8px 5px;text-align:center;}
+.dval{font-family:'Bebas Neue',sans-serif;font-size:19px;line-height:1;margin-bottom:2px;}
+.dlbl{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;}
+.dexs{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.dex{background:var(--s2);border-radius:7px;padding:6px 9px;font-size:11px;display:flex;justify-content:space-between;align-items:center;}
+.dexn{font-weight:500;}
+.dexv{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);}
+.dnote{font-size:11px;color:var(--g);line-height:1.5;padding-top:8px;border-top:1px solid var(--bd);}
+.dempty{text-align:center;padding:12px;font-size:11px;color:var(--g);}
+.dadd{width:100%;padding:9px;border-radius:8px;background:var(--green);border:none;color:#000;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;margin-top:9px;}
+.dadd:active{opacity:.8;}
+/* PROGRESS */
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px;}
+.pst{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px;}
+.psl2{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px;}
+.psv{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
+.psu{font-size:10px;color:var(--g);margin-left:2px;}
+.psd{font-family:'DM Mono',monospace;font-size:8px;margin-top:3px;}
+.dp{color:var(--green);}.dn{color:var(--red);}.dz{color:var(--g);}
+.ec{background:var(--s1);border:1px solid var(--bd);border-radius:12px;margin-bottom:7px;overflow:hidden;}
+.ech{padding:11px 13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.ech:active{opacity:.7;}
+.ecn{font-size:12px;font-weight:600;}
+.ecl{font-family:'DM Mono',monospace;font-size:8px;color:var(--green);}
+.ecb{padding:0 13px 12px;display:none;}
+.ec.open .ecb{display:block;}
+.ecinp{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;}
+.ecll{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.eci{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:7px;color:var(--w);font-family:'DM Mono',monospace;font-size:11px;outline:none;-webkit-appearance:none;text-align:center;transition:border-color .18s;}
+.eci:focus{border-color:var(--green);}
+.ecsave{width:100%;padding:7px;border-radius:7px;background:var(--s2);border:1px solid var(--bd);color:var(--green);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:3px;}
+.ecrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd);font-size:10px;}
+.ecrow:last-child{border-bottom:none;}
+.ecdel{background:none;border:none;color:var(--g);font-size:12px;cursor:pointer;padding:0;}
+/* AI CHAT */
+.cmsg{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none;}
+.cmsg::-webkit-scrollbar{display:none;}
+.msg{max-width:86%;display:flex;flex-direction:column;gap:2px;}
+.msg.u{align-self:flex-end;align-items:flex-end;}
+.msg.a{align-self:flex-start;align-items:flex-start;}
+.bub{padding:9px 12px;border-radius:14px;font-size:12px;line-height:1.5;}
+.msg.u .bub{background:var(--green);color:#000;border-radius:14px 14px 4px 14px;}
+.msg.a .bub{background:var(--s2);color:var(--w);border:1px solid var(--bd);border-radius:14px 14px 14px 4px;}
+.mt2{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);padding:0 3px;}
+.cia{padding:7px 13px;padding-bottom:calc(7px + var(--sab));background:rgba(8,8,8,.95);backdrop-filter:blur(20px);border-top:1px solid var(--bd);display:flex;gap:6px;align-items:flex-end;flex-shrink:0;}
+.cin{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:17px;padding:8px 12px;color:var(--w);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:none;max-height:85px;line-height:1.4;-webkit-appearance:none;}
+.cin:focus{border-color:var(--green);}
+.csnd{width:34px;height:34px;border-radius:50%;background:var(--green);border:none;color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.csnd:active{opacity:.7;}
+.csnd:disabled{background:var(--s3);color:var(--g);}
+.qps{display:flex;gap:5px;overflow-x:auto;padding:5px 13px 0;flex-shrink:0;scrollbar-width:none;}
+.qps::-webkit-scrollbar{display:none;}
+.qp{background:var(--s2);border:1px solid var(--bd);border-radius:16px;padding:5px 10px;font-size:10px;color:var(--w);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.qp:active{opacity:.6;}
+.typ{display:flex;gap:3px;padding:8px 11px;background:var(--s2);border:1px solid var(--bd);border-radius:14px 14px 14px 4px;align-self:flex-start;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--g);animation:tb 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;}
+.td:nth-child(3){animation-delay:.4s;}
+@keyframes tb{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+/* PHOTO AI */
+.fhero{background:linear-gradient(135deg,#0f0a1e,#1a0f2e);border:1px solid rgba(168,85,247,.25);border-radius:14px;padding:15px;margin-bottom:10px;text-align:center;}
+.fhero-i{font-size:34px;margin-bottom:6px;}
+.fhero-t{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.03em;margin-bottom:4px;}
+.fhero-s{font-size:10px;color:var(--g);}
+.upload{background:var(--s2);border:2px dashed var(--bd);border-radius:12px;padding:22px 14px;text-align:center;cursor:pointer;transition:all .18s;margin-bottom:9px;}
+.upload.has{border-style:solid;border-color:rgba(168,85,247,.4);background:rgba(168,85,247,.08);}
+.upload:active{opacity:.7;}
+.upload-i{font-size:26px;margin-bottom:6px;}
+.upload-l{font-size:11px;color:var(--g);}
+.upload-l strong{color:var(--w);}
+#fprev{width:100%;border-radius:8px;margin-bottom:8px;display:none;max-height:170px;object-fit:cover;}
+.abtn{width:100%;padding:11px;border-radius:10px;background:var(--purple);border:none;color:#fff;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;margin-bottom:11px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.abtn:active{opacity:.8;}
+.abtn:disabled{background:var(--s3);color:var(--g);}
+.fres{background:var(--s1);border:1px solid rgba(168,85,247,.3);border-radius:12px;padding:13px;display:none;}
+.fres-t{font-size:13px;font-weight:600;margin-bottom:8px;}
+.fres-g{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px;}
+.frm{background:var(--s2);border-radius:8px;padding:8px 9px;}
+.frml{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.frmv{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;}
+.frmu{font-size:10px;color:var(--g);margin-left:2px;}
+.fres-d{font-size:11px;color:var(--g);line-height:1.6;}
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
+.ov.open{opacity:1;pointer-events:all;}
+.modal{width:100%;background:var(--s1);border-radius:20px 20px 0 0;padding:18px;padding-bottom:calc(20px + var(--sab));transform:translateY(100%);transition:transform .28s cubic-bezier(.32,0,.67,0);border-top:1px solid var(--bd);max-height:92vh;overflow-y:auto;scrollbar-width:none;}
+.modal::-webkit-scrollbar{display:none;}
+.ov.open .modal{transform:translateY(0);transition-timing-function:cubic-bezier(.22,1,.36,1);}
+.mh{width:30px;height:3px;border-radius:2px;background:var(--bd);margin:0 auto 14px;}
+.mti{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.03em;margin-bottom:11px;}
+.frow{display:flex;gap:6px;margin-bottom:7px;}
+.fl{flex:1;display:flex;flex-direction:column;gap:4px;}
+.fl label{font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.1em;}
+.fl input,.fl textarea,.fl select{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 11px;color:var(--w);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .18s;}
+.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--green);}
+.fl textarea{min-height:52px;resize:none;line-height:1.5;}
+.fl select option{background:var(--s2);}
+.msave{width:100%;padding:11px;border-radius:10px;background:var(--green);border:none;color:#000;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;margin-top:7px;}
+.msave:active{opacity:.8;}
+.mcan{width:100%;padding:9px;border-radius:10px;background:var(--s2);border:1px solid var(--bd);color:var(--g);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:5px;}
+.mcan:active{opacity:.7;}
+.exrow{display:flex;justify-content:space-between;align-items:center;background:var(--s2);border-radius:7px;padding:6px 9px;font-size:11px;margin-bottom:4px;}
+.exrow-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:0;}
+.empty{text-align:center;padding:24px 14px;font-size:11px;color:var(--g);}
+.empty-i{font-size:28px;margin-bottom:7px;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.06);}100%{transform:scale(1);}}
+.pop{animation:pop .28s cubic-bezier(.34,1.56,.64,1);}
+</style>
+</head>
+<body>
+
+<!-- ════ PASSWORD SCREEN ════ -->
+<div id="pw">
+  <div id="pw-ico">💪</div>
+  <div id="pw-title">MANUEL</div>
+  <div id="pw-sub">Workout Planner</div>
+  <div id="pw-box">
+    <div id="pw-lbl">Password</div>
+    <input id="pw-inp" type="password" placeholder="Inserisci la password" onkeydown="if(event.key==='Enter')checkPw()">
+    <div id="pw-err">❌ Password errata. Riprova.</div>
+    <button id="pw-btn" onclick="checkPw()">Entra →</button>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app">
+<div id="screens">
+
+<!-- WORKOUT -->
+<div class="screen active" id="sc-workout">
+  <div class="ph"><div class="pe">💪 Push · Pull · Legs</div><div class="pt">WORKOUT <span>PLANNER</span></div><div class="ps">3 sessioni/sett · Manuel · 70 kg · 185 cm</div></div>
+  <div class="wtabs">
+    <button class="wt active" data-d="lun">Lun · Push</button>
+    <button class="wt" data-d="mer">Mer · Pull ⭐</button>
+    <button class="wt" data-d="ven">Ven · Legs</button>
+  </div>
+  <div class="wdays">
+
+    <!-- LUN -->
+    <div class="wd active" id="d-lun">
+      <div class="hero"><span class="htag tpu">Lunedì · Push Day</span><div class="htitle">Petto · Spalle · Tricipiti</div><div class="hsub">6 esercizi · 18:00–19:20</div></div>
+      <div class="strip"><span class="si">🔥</span><div><div class="sl2 warm">Riscaldamento</div><div class="stxt">10 min crosstrainer · Apertura sterno 10× · Cobra pose 10× · Band external rotation 3×10</div></div></div>
+      <div class="sl">Esercizi</div>
+      <div class="ex"><div class="exh"><div class="exn">1</div><div><div class="exname">Chest Press macchina</div><div class="exm">Petto — contrazione finale, scapole strette · 25 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">4</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">8–10</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">90s</div></div></div><div class="extip">💡 <span>Piedi a terra, non inarcare la schiena. Scapole strette e giù per tutto il movimento.</span></div><button class="vbtn" onclick="toggleV(this,'videos/chest-press.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">2</div><div><div class="exname">Panca inclinata manubri</div><div class="exm">Petto alto — 3°/4° foro · 8 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Gomiti a 45°, non aprire le braccia a croce. Abbassa lento, sali controllato.</span></div><button class="vbtn" onclick="toggleV(this,'videos/panca-inclinata.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">3</div><div><div class="exname">Shoulder Press manubri</div><div class="exm">Spalle — seduto, schiena appoggiata</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Non bloccare i gomiti in cima. Schiena sempre appoggiata alla panca.</span></div><button class="vbtn" onclick="toggleV(this,'videos/shoulder-press.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">4</div><div><div class="exname">Lateral Raise manubri</div><div class="exm">Spalle laterali — larghezza corpo</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">12–15</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Zero slancio, movimento lento. Pesi leggeri con forma perfetta sempre.</span></div><button class="vbtn" onclick="toggleV(this,'videos/lateral-raise.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">5</div><div><div class="exname">Cable Tricipiti Push Down</div><div class="exm">Tricipiti — corda, gomiti fermi · 10 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">12–15</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Gomiti incollati ai fianchi per tutto il movimento.</span></div><button class="vbtn" onclick="toggleV(this,'videos/cable-tricipiti.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">6</div><div><div class="exname">French Press manubri</div><div class="exm">Tricipite lungo — panca 45°, 3° foro · 8 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Abbassa lentamente 3 sec, sali esplosivo. Gomiti fermi e stretti.</span></div><button class="vbtn" onclick="toggleV(this,'videos/french-press.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="strip" style="margin-top:9px;"><span class="si">🧊</span><div><div class="sl2 cool">Defaticamento</div><div class="stxt">5 min tapirulan · 5 min stretching petto e spalle</div></div></div>
+      <div class="ol">📈 <span><strong>Overload:</strong> se completi tutte le reps con buona forma → aggiungi 2.5–5 kg la settimana dopo.</span></div>
+    </div>
+
+    <!-- MER -->
+    <div class="wd" id="d-mer">
+      <div class="hero pull"><span class="htag tpl">Mercoledì · Pull Day</span><div class="htitle">Schiena · Bicipiti</div><div class="hsub">7 esercizi — il giorno più importante per te</div><div class="fbadge">⭐ FOCUS DAY</div></div>
+      <div class="strip"><span class="si">🔥</span><div><div class="sl2 warm">Riscaldamento</div><div class="stxt">10 min crosstrainer · Cat-cow 10× · Dorsal mobility 10×/lato · Band ext. rotation 3×10</div></div></div>
+      <div class="sl">Schiena</div>
+      <div class="ex hi"><div class="exh"><div class="exn">1</div><div><div class="exname">Lat Machine presa larga</div><div class="exm">Dorsali — ROM completo, scapole giù · 30 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">4</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">8–10</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">90s</div></div></div><div class="extip">💡 <span>Tira verso il petto, MAI dietro la testa. Scapole abbassate in contrazione.</span></div><button class="vbtn" onclick="toggleV(this,'videos/lat-machine.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex hi"><div class="exh"><div class="exn">2</div><div><div class="exname">Pulley basso presa stretta</div><div class="exm">Schiena spessa — verso ombelico · 20 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">4</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">8–10</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">90s</div></div></div><div class="extip">💡 <span>Petto fuori, schiena dritta. Tira con i gomiti, non con le mani.</span></div><button class="vbtn" onclick="toggleV(this,'videos/pulley-basso.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex hi"><div class="exh"><div class="exn">3</div><div><div class="exname">Dumbbell One Arm Row</div><div class="exm">Schiena spessa — verso il fianco · 12 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Schiena parallela al suolo, appoggia il ginocchio sulla panca. ROM completo.</span></div><button class="vbtn" onclick="toggleV(this,'videos/one-arm-row.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="sl">Bicipiti</div>
+      <div class="ex"><div class="exh"><div class="exn">4</div><div><div class="exname">Curl bilanciere / manubri</div><div class="exm">Bicipiti — supinazione completa al top</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">4</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">8–10</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Gomiti fermi ai fianchi — zero dondolamento. Forma pulita batte il peso.</span></div><button class="vbtn" onclick="toggleV(this,'videos/curl-bilanciere.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">5</div><div><div class="exname">Cable Curl basso</div><div class="exm">Bicipiti — tensione costante · 10 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">12–15</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Strizza il bicipite in cima. Tensione costante su tutto il ROM.</span></div><button class="vbtn" onclick="toggleV(this,'videos/cable-curl.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">6</div><div><div class="exname">Spider Curl</div><div class="exm">Bicipiti — picco, panca inclinata capovolta</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Braccia perpendicolari al suolo, gomiti fissi. Stendi completamente in basso.</span></div><button class="vbtn" onclick="toggleV(this,'videos/spider-curl.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">7</div><div><div class="exname">Face Pull cavi</div><div class="exm">Deltoide post. + rotatori — postura</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">15</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Non saltarlo mai. Fondamentale per postura e salute delle spalle.</span></div><button class="vbtn" onclick="toggleV(this,'videos/face-pull.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="strip" style="margin-top:9px;"><span class="si">🧊</span><div><div class="sl2 cool">Defaticamento</div><div class="stxt">5 min rower · 5 min stretching schiena e bicipiti</div></div></div>
+      <div class="ol">📈 <span><strong>Overload:</strong> se completi tutte le reps → aggiungi 2.5–5 kg la settimana dopo.</span></div>
+    </div>
+
+    <!-- VEN -->
+    <div class="wd" id="d-ven">
+      <div class="hero"><span class="htag tle">Venerdì · Legs Day</span><div class="htitle">Gambe · Core · Spalle</div><div class="hsub">6 esercizi · le gambe producono testosterone</div></div>
+      <div class="strip"><span class="si">🔥</span><div><div class="sl2 warm">Riscaldamento</div><div class="stxt">10 min bici · Cat-cow 10× · Mobilità anche e ginocchia</div></div></div>
+      <div class="sl">Esercizi</div>
+      <div class="ex"><div class="exh"><div class="exn">1</div><div><div class="exname">Leg Press</div><div class="exm">Quadricipiti — piedi larghezza spalle · 100 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">4</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">90s</div></div></div><div class="extip">💡 <span>Non bloccare le ginocchia in estensione. Scendi a 90°.</span></div><button class="vbtn" onclick="toggleV(this,'videos/leg-press.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">2</div><div><div class="exname">Hack Squat</div><div class="exm">Quadricipiti — ROM completo · 40 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10–12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">90s</div></div></div><div class="extip">💡 <span>Piedi leggermente avanti per proteggere le ginocchia.</span></div><button class="vbtn" onclick="toggleV(this,'videos/hack-squat.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">3</div><div><div class="exname">Leg Curl sdraiato</div><div class="exm">Femorali posteriori — lento e controllato</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">12</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Fase eccentrica almeno 3 secondi. Bilancia quad e femorali.</span></div><button class="vbtn" onclick="toggleV(this,'videos/leg-curl.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">4</div><div><div class="exname">Dumbbell Lunge alternato</div><div class="exm">Glutei e quad — passo lungo · 4 kg</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">10/lato</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">75s</div></div></div><div class="extip">💡 <span>Ginocchio non oltre la punta del piede. Busto eretto.</span></div><button class="vbtn" onclick="toggleV(this,'videos/lunge.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">5</div><div><div class="exname">Lateral Raise cavi bassi</div><div class="exm">Spalle laterali — tensione costante</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">15</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">60s</div></div></div><div class="extip">💡 <span>Il cavo mantiene tensione costante su tutto il ROM.</span></div><button class="vbtn" onclick="toggleV(this,'videos/lateral-raise-cavi.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="ex"><div class="exh"><div class="exn">6</div><div><div class="exname">Plank + Criss Cross</div><div class="exm">Core — 30 sec plank + 10 reps criss cross</div></div></div><div class="exs"><div class="sp"><div class="spl">Serie</div><div class="spv">3</div></div><div class="sp"><div class="spl">Reps</div><div class="spv">—</div></div><div class="sp"><div class="spl">Recupero</div><div class="spv">45s</div></div></div><div class="extip">💡 <span>Core attivo, respira normalmente.</span></div><button class="vbtn" onclick="toggleV(this,'videos/plank.mp4')">▶ Guarda come si fa</button><div class="vbox"></div></div>
+      <div class="strip" style="margin-top:9px;"><span class="si">🧊</span><div><div class="sl2 cool">Defaticamento</div><div class="stxt">10 min bici leggera · 5 min stretching gambe</div></div></div>
+      <div class="ol">💪 <span><strong>Ricorda:</strong> le gambe stimolano il testosterone. Non saltare mai il venerdì.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CIBO -->
+<div class="screen" id="sc-food">
+  <div class="ph"><div class="pe">🍽️ Piano alimentare</div><div class="pt">MANGIA PER <span>CRESCERE</span></div><div class="ps">Combinazioni a scelta · senza latte · senza pesce</div></div>
+  <div class="scroll"><div class="px">
+    <div class="info">ℹ️ Per ogni pasto ci sono più opzioni — scegli quella che preferisci ogni giorno.</div>
+    <div class="stog">
+      <button class="sbt active" onclick="switchSeason('sco',this)">🎒 Scolastico</button>
+      <button class="sbt" onclick="switchSeason('est',this)">☀️ Estivo</button>
+    </div>
+    <div class="mpl active" id="pl-sco">
+      <div class="warn">⚠️ <strong>Scolastico:</strong> sveglia 5:20 · col. 5:40 · pranzo 12:30 · cena 19:50 · letto 21:30</div>
+      <div class="mb"><div class="mt">⏰ 05:40 — Colazione</div><div class="mn">Proteica · 10 min max</div><div class="cn">Scegli una opzione:</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>3 uova strapazzate + 80g avena con acqua e miele + 1 banana</div><div class="combo"><div class="clbl">Opzione B — veloce</div>4 uova al tegamino + 2 fette pane integrale con marmellata</div><div class="combo"><div class="clbl">Opzione C</div>200g yogurt greco + 80g avena con acqua + miele + 1 frutto</div><div class="combo"><div class="clbl">Opzione D — salata</div>3 uova + 50g ricotta + 2 fette pane integrale + pomodoro</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~40g</span><span class="mc c">Carbo: ~80g</span><span class="mc f">Grassi: ~18g</span><span class="mc k">~640 kcal</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ ~10:00 — Spuntino scuola</div><div class="mn">Niente da preparare · solo zaino</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>1 banana (metti nello zaino la sera prima)</div><div class="combo"><div class="clbl">Opzione B</div>1 mela o pera</div><div class="combo"><div class="clbl">Opzione C</div>30g mandorle o noci + 1 frutto</div></div><div class="mac"><div class="mr"><span class="mc k">~80–200 kcal</span><span class="mc c">energia rapida</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ 12:30 — Pranzo</div><div class="mn">Bilanciato</div><div class="cn">Scegli una combinazione:</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>150g pollo/tacchino + 100g riso + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione B — pasta</div>100g pasta al pomodoro + 150g pollo + insalata</div><div class="combo"><div class="clbl">Opzione C — pasta al ragù</div>100g pasta + ragù di carne magra 150g + insalata</div><div class="combo"><div class="clbl">Opzione D — legumi</div>200g ceci/lenticchie + 80g pasta + verdure</div><div class="combo"><div class="clbl">Opzione E — uova</div>4 uova sode + 200g patate al forno + verdure</div><div class="combo"><div class="clbl">Opzione F — ricotta</div>200g ricotta + 80g pasta al pomodoro + insalata</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~42–48g</span><span class="mc c">Carbo: ~80–90g</span><span class="mc k">~620–700 kcal</span></div></div></div>
+      <div class="mb" style="border-color:rgba(46,204,113,.25);background:linear-gradient(135deg,#0b1a10,#111);"><div class="mt" style="color:var(--green);">⏰ 17:30 — Pre-workout</div><div class="mn">Prima di uscire</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>1 banana + 5g creatina in acqua</div><div class="combo"><div class="clbl">Opzione B</div>2 fette pane integrale con marmellata + 5g creatina</div></div><div class="mac"><div class="mr"><span class="mc k">~150–280 kcal</span><span class="mc" style="color:var(--green);border-color:rgba(46,204,113,.3);">+ Creatina 5g</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ 19:50 — Cena post-workout</div><div class="mn">Pasto più importante · di recupero</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g pollo/tacchino + 200g patate al forno + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione B — pasta</div>100g pasta + ragù di carne magra 180g + insalata</div><div class="combo"><div class="clbl">Opzione C</div>200g manzo/maiale magro + 80g riso + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione D — uova</div>5 uova strapazzate + 80g pasta al pomodoro + verdure</div><div class="combo"><div class="clbl">Opzione E — ricotta</div>250g ricotta + 80g pasta + insalata verde</div><div class="combo"><div class="clbl">Opzione F — legumi</div>300g lenticchie/ceci + 100g pasta + verdure</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~48–55g</span><span class="mc c">Carbo: ~60–80g</span><span class="mc k">~600–750 kcal</span></div></div></div>
+      <div class="mb" style="border:1px dashed var(--bd);"><div class="mt">⏰ ~21:00 — Spuntino (solo giorni senza scuola)</div><div class="mn">1 minuto</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g yogurt greco + miele</div><div class="combo"><div class="clbl">Opzione B</div>30g mandorle o noci</div><div class="combo"><div class="clbl">Opzione C</div>150g ricotta con miele e cannella</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~18–22g</span><span class="mc k">~200–260 kcal</span></div></div></div>
+    </div>
+    <div class="mpl" id="pl-est">
+      <div class="info" style="background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.2);color:var(--green);">☀️ <strong>Estivo:</strong> col. 6:00 → corsa → palestra 8:30–10:00 → pranzo 12:00 → cena 19:30</div>
+      <div class="mb"><div class="mt">⏰ 06:00 — Colazione pre-corsa</div><div class="mn">Leggera · 5 min</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>1 banana + 2 fette pane integrale con marmellata</div><div class="combo"><div class="clbl">Opzione B</div>80g avena con acqua e miele + 1 frutto</div></div><div class="mac"><div class="mr"><span class="mc c">Carbo rapidi</span><span class="mc k">~300–380 kcal</span></div></div></div>
+      <div class="mb" style="border-color:rgba(46,204,113,.25);background:linear-gradient(135deg,#0b1a10,#111);"><div class="mt" style="color:var(--green);">⏰ ~07:30 — Post corsa · Pre palestra</div><div class="mn">Recovery + energia · 10 min</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>3 uova strapazzate + 60g avena con acqua + 1 banana + 5g creatina</div><div class="combo"><div class="clbl">Opzione B</div>4 uova al tegamino + 2 fette pane integrale con miele + 5g creatina</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~32–38g</span><span class="mc k">~500–580 kcal</span><span class="mc" style="color:var(--green);border-color:rgba(46,204,113,.3);">+ Creatina 5g</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ 12:00 — Pranzo post-palestra</div><div class="mn">Pasto principale · 15 min max</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g pollo al forno + 120g riso + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione B — pasta</div>120g pasta al pomodoro + 200g pollo + insalata</div><div class="combo"><div class="clbl">Opzione C</div>120g pasta + ragù di carne magra 180g + insalata</div><div class="combo"><div class="clbl">Opzione D — legumi</div>250g ceci/lenticchie + 100g riso o pasta + verdure</div><div class="combo"><div class="clbl">Opzione E — uova</div>5 uova + 250g patate al forno + verdure abbondanti</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~50–58g</span><span class="mc c">Carbo: ~100g</span><span class="mc k">~750–900 kcal</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ 15:30 — Spuntino</div><div class="mn">Zero preparazione</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g yogurt greco + miele + 1 frutto</div><div class="combo"><div class="clbl">Opzione B</div>30g mandorle + 1 banana</div><div class="combo"><div class="clbl">Opzione C</div>150g ricotta + 1 frutto + miele</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~20–22g</span><span class="mc k">~320–380 kcal</span></div></div></div>
+      <div class="mb"><div class="mt">⏰ 19:30 — Cena</div><div class="mn">Semplice · 15–20 min</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g pollo/tacchino alla piastra + 200g patate al forno + verdure</div><div class="combo"><div class="clbl">Opzione B — pasta</div>100g pasta integrale + 150g pollo + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione C</div>200g manzo/maiale magro + 80g pasta + verdure + olio EVO</div><div class="combo"><div class="clbl">Opzione D</div>250g ricotta + 80g pasta al pomodoro + insalata verde</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~48–52g</span><span class="mc k">~700–750 kcal</span></div></div></div>
+      <div class="mb" style="border:1px dashed var(--bd);"><div class="mt">⏰ ~22:00 — Spuntino (se non dormi prima delle 23)</div><div class="mn">1 minuto</div><div class="combos"><div class="combo"><div class="clbl">Opzione A</div>200g yogurt greco + miele</div><div class="combo"><div class="clbl">Opzione B</div>30g mandorle o noci</div></div><div class="mac"><div class="mr"><span class="mc p">Prot: ~18–22g</span><span class="mc k">~200–250 kcal</span></div></div></div>
+    </div>
+    <div class="sl">Evita sempre</div>
+    <div class="avoid-g"><div class="avoid-i">🍺 Alcolici</div><div class="avoid-i">🥤 Bevande zuccherate</div><div class="avoid-i">🍟 Fast food spesso</div><div class="avoid-i">🍪 Snack confezionati</div><div class="avoid-i">⏭️ Saltare i pasti</div><div class="avoid-i">🚫 Pasti senza prot.</div></div>
+    <div class="sl">Fabbisogno · 70 kg</div>
+    <div class="card"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px;">
+      <div style="background:var(--s2);border-radius:8px;padding:9px;text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);">140–160<span style="font-size:11px;color:var(--g);">g</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;">Proteine</div></div>
+      <div style="background:var(--s2);border-radius:8px;padding:9px;text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--blue);">300–380<span style="font-size:11px;color:var(--g);">g</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;">Carboidrati</div></div>
+      <div style="background:var(--s2);border-radius:8px;padding:9px;text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--yellow);">70–90<span style="font-size:11px;color:var(--g);">g</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;">Grassi</div></div>
+      <div style="background:var(--s2);border-radius:8px;padding:9px;text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--red);">2800–3100<span style="font-size:11px;color:var(--g);">kcal</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;">Calorie</div></div>
+    </div><div style="font-size:10px;color:var(--g);line-height:1.6;">🥩 <strong style="color:var(--w);">Proteine:</strong> pollo, tacchino, manzo, uova, ricotta, yogurt greco, legumi<br>🍝 <strong style="color:var(--w);">Carbo:</strong> pasta, riso, patate, pane integrale, avena, frutta<br>🫒 <strong style="color:var(--w);">Grassi:</strong> olio EVO, mandorle, noci, uova intere, ricotta</div></div>
+  </div></div>
+</div>
+
+<!-- ACQUA -->
+<div class="screen" id="sc-water">
+  <div class="ph"><div class="pe">💧 Idratazione</div><div class="pt">ACQUA <span>GIORNALIERA</span></div><div class="ps">2.5 L normali · 3 L giorni allenamento</div></div>
+  <div class="scroll"><div class="px">
+    <div class="wh"><div class="wa" id="wamt">0.0 L</div><div class="wtr">obiettivo: <strong id="wtlbl">2.5 L</strong> · <span id="wpct">0%</span></div><div class="wbar-t"><div class="wbar-f" id="wbar" style="width:0%"></div></div><div class="wgl" id="wgl"></div></div>
+    <div class="wbtns"><button class="wadd" onclick="addW(250)">+ 250 ml</button><button class="wadd" onclick="addW(500)" style="background:rgba(77,142,240,.25);color:var(--blue);">+ 500 ml</button><button class="wrst" onclick="resetW()">↺</button></div>
+    <div class="wts"><button class="wtb active" id="wt25" onclick="setWT(2500)">2.5 L normale</button><button class="wtb" id="wt30" onclick="setWT(3000)">3.0 L allenamento</button></div>
+    <div style="background:var(--bld);border:1px solid rgba(77,142,240,.2);border-radius:10px;padding:10px;margin:9px 0;font-size:10px;color:rgba(150,190,255,.85);line-height:1.6;">💡 Con la creatina idratati bene. Giorni di palestra + corsa estiva → 3–3.5 L.</div>
+    <div class="sl">Log di oggi</div>
+    <div id="wlog"><div class="empty" id="wempty"><div class="empty-i">💧</div>Nessuna bevuta registrata.</div></div>
+    <div class="sl">Consigli</div>
+    <div class="card"><div style="display:flex;flex-direction:column;gap:7px;font-size:10px;color:var(--g);line-height:1.5;">
+      <div>🌅 <strong style="color:var(--w);">5:40:</strong> 500 ml appena sveglio prima di mangiare</div>
+      <div>🎒 <strong style="color:var(--w);">A scuola:</strong> bottiglia 750 ml — finiscila prima del pranzo</div>
+      <div>🏃 <strong style="color:var(--w);">Corsa estiva:</strong> 300–500 ml ogni 30 min</div>
+      <div>🏋️ <strong style="color:var(--w);">In palestra:</strong> almeno 500 ml totali</div>
+      <div>🍽️ <strong style="color:var(--w);">Ai pasti:</strong> 1 bicchiere grande a ogni pasto</div>
+    </div></div>
+  </div></div>
+</div>
+
+<!-- DIARIO -->
+<div class="screen" id="sc-cal">
+  <div class="ph"><div class="pe">📅 Diario giornaliero</div><div class="pt">CALENDARIO <span>PROGRESSI</span></div><div class="ps">Tocca un giorno per vedere o aggiungere dati</div></div>
+  <div class="calnav"><div class="calsels"><select class="calsel" id="cal-y"></select><select class="calsel" id="cal-m"></select><button class="calgob" onclick="jumpToday()">Oggi</button></div></div>
+  <div class="caltl" id="caltl"></div>
+  <div class="scroll" style="padding-bottom:calc(var(--nh)+var(--sab)+24px);">
+    <div class="ddet" id="ddet"><div class="dempty">Seleziona un giorno dalla timeline</div></div>
+    <div style="height:8px;"></div>
+  </div>
+</div>
+
+<!-- PESI -->
+<div class="screen" id="sc-prog">
+  <div class="ph"><div class="pe">📊 I miei pesi</div><div class="pt">TRACCIA <span>I PESI</span></div><div class="ps">Registra kg, serie e reps per ogni esercizio</div></div>
+  <div class="scroll"><div class="px">
+    <div class="info">📝 Tocca un esercizio, inserisci il peso usato e le reps. Aggiungi quante sessioni vuoi. Cancella con ✕.</div>
+    <div class="pgrid">
+      <div class="pst"><div class="psl2">Peso corporeo</div><div class="psv" id="pp-peso">—<span class="psu">kg</span></div><div class="psd dz" id="pp-d">nessun dato</div></div>
+      <div class="pst"><div class="psl2">Sessioni totali</div><div class="psv" id="pp-sess">0</div><div class="psd dz">registrate</div></div>
+    </div>
+    <div class="sl">Tutti gli esercizi</div>
+    <div id="prog-list"></div>
+  </div></div>
+</div>
+
+<!-- AI -->
+<div class="screen" id="sc-ai">
+  <div class="ph" style="flex-shrink:0;"><div class="pe">🤖 Assistente AI</div><div class="pt">CHIEDI <span>TUTTO</span></div></div>
+  <div id="limit-banner" style="display:none;background:var(--yd);border:1px solid rgba(245,197,24,.25);border-radius:10px;padding:10px 13px;margin:0 14px 5px;font-size:10px;color:var(--yellow);line-height:1.5;flex-shrink:0;">⏳ <strong>Limite API raggiunto.</strong> Si resetta automaticamente. Riprova tra qualche ora.</div>
+  <div class="qps" id="qps">
+    <button class="qp" onclick="sendQP('Come progredisco con i pesi?')">📈 Progressione</button>
+    <button class="qp" onclick="sendQP('Cosa mangio prima di allenarmi alle 18?')">🍌 Pre-workout</button>
+    <button class="qp" onclick="sendQP('Ho i muscoli indolenziti, mi alleno?')">💪 DOMS</button>
+    <button class="qp" onclick="sendQP('Come faccio lo spider curl?')">🕷️ Spider curl</button>
+    <button class="qp" onclick="sendQP('Quando vedrò i risultati?')">⏱️ Risultati</button>
+  </div>
+  <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="cmsg" id="cmsg">
+      <div class="msg a"><div class="bub">👋 Ciao Manuel! Sono il tuo assistente AI personale.<br><br>Conosco la tua scheda Push/Pull/Legs, i tuoi orari e la tua nutrizione.<br><br>Chiedimi qualsiasi cosa! 💪</div><div class="mt2">Ora</div></div>
+    </div>
+    <div class="cia">
+      <textarea class="cin" id="cin" placeholder="Scrivi la tua domanda…" rows="1" oninput="autoR(this)" onkeydown="ck(event)"></textarea>
+      <button class="csnd" id="csnd" onclick="sendChat()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- FOTO AI -->
+<div class="screen" id="sc-photo">
+  <div class="ph"><div class="pe">📸 Analisi pasto AI</div><div class="pt">FOTO & <span>CALORIE</span></div><div class="ps">Scatta → l'AI calcola tutto</div></div>
+  <div class="scroll"><div class="px">
+    <div class="fhero"><div class="fhero-i">🤖🍽️</div><div class="fhero-t">Analisi Nutrizionale AI</div><div class="fhero-s">Claude analizza la foto e stima calorie, proteine, carboidrati e grassi</div></div>
+    <input type="file" id="ffile" accept="image/*" capture="environment" style="display:none" onchange="prevF(event)">
+    <div class="upload" id="uarea" onclick="document.getElementById('ffile').click()"><div class="upload-i">📷</div><div class="upload-l"><strong>Tocca per scattare o caricare</strong><br>dall'album o dalla fotocamera</div></div>
+    <img id="fprev" alt="anteprima">
+    <div id="flimit" style="display:none;background:var(--yd);border:1px solid rgba(245,197,24,.25);border-radius:10px;padding:10px;margin-bottom:10px;font-size:10px;color:var(--yellow);line-height:1.5;">⏳ <strong>Limite API raggiunto.</strong> Si resetta automaticamente.</div>
+    <button class="abtn" id="abtn" onclick="analyzeF()" disabled>🔍 Analizza pasto con AI</button>
+    <div class="fres" id="fres"><div class="fres-t" id="fres-t">Analisi pasto</div><div class="fres-g" id="fres-g"></div><div class="fres-d" id="fres-d"></div></div>
+    <div class="sl">Come funziona</div>
+    <div class="card"><div style="display:flex;flex-direction:column;gap:7px;font-size:10px;color:var(--g);line-height:1.5;">
+      <div>📸 <strong style="color:var(--w);">1.</strong> Inquadra il piatto dall'alto, buona luce, tutto visibile</div>
+      <div>🤖 <strong style="color:var(--w);">2.</strong> AI riconosce alimenti e stima le porzioni</div>
+      <div>📊 <strong style="color:var(--w);">3.</strong> Calorie, proteine, carbo, grassi in pochi secondi</div>
+      <div style="color:rgba(245,197,24,.7);">⚠️ Stime con margine ±15–20%</div>
+    </div></div>
+  </div></div>
+</div>
+
+</div><!-- end screens -->
+
+<nav id="nav">
+  <button class="nb active" id="nb-workout" onclick="switchS('workout',this)"><span class="nb-i">🏋️</span><span class="nb-l">Workout</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-food" onclick="switchS('food',this)"><span class="nb-i">🍽️</span><span class="nb-l">Cibo</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-water" onclick="switchS('water',this)"><span class="nb-i">💧</span><span class="nb-l">Acqua</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-cal" onclick="switchS('cal',this)"><span class="nb-i">📅</span><span class="nb-l">Diario</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-prog" onclick="switchS('prog',this)"><span class="nb-i">📊</span><span class="nb-l">Pesi</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-ai" onclick="switchS('ai',this)"><span class="nb-i">🤖</span><span class="nb-l">AI</span><span class="nb-d"></span></button>
+  <button class="nb" id="nb-photo" onclick="switchS('photo',this)"><span class="nb-i">📸</span><span class="nb-l">Foto</span><span class="nb-d"></span></button>
+</nav>
+</div><!-- end app -->
+
+<!-- MODAL DIARIO -->
+<div class="ov" id="ov-day" onclick="if(event.target===this)closeOv()">
+  <div class="modal">
+    <div class="mh"></div>
+    <div class="mti" id="ov-title">Aggiungi dati</div>
+    <div class="frow">
+      <div class="fl"><label>Peso (kg)</label><input type="number" id="md-peso" placeholder="70.5" step="0.1"></div>
+      <div class="fl"><label>Acqua (ml)</label><input type="number" id="md-acqua" placeholder="2500" step="100"></div>
+    </div>
+    <div class="fl" style="margin-bottom:9px;">
+      <label>Aggiungi esercizio</label>
+      <select id="md-exsel" style="margin-bottom:6px;"><option value="">-- scegli esercizio --</option></select>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:5px;align-items:end;margin-bottom:4px;">
+        <div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Kg</div><input type="number" id="md-kg" class="eci" placeholder="—" style="text-align:left;padding:8px 9px;"></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Reps</div><input type="number" id="md-reps" class="eci" placeholder="—" style="text-align:left;padding:8px 9px;"></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:7px;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Serie</div><input type="number" id="md-sets" class="eci" placeholder="3" style="text-align:left;padding:8px 9px;"></div>
+        <button onclick="addDayEx()" id="addbtn" style="padding:8px 12px;border-radius:8px;background:var(--green);border:none;color:#000;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;font-weight:700;height:36px;margin-top:18px;">+</button>
+      </div>
+      <div id="md-exlist"></div>
+    </div>
+    <div class="fl" style="margin-bottom:9px;"><label>Note del giorno</label><textarea id="md-note" placeholder="Come ti sei sentito? Cosa hai notato?"></textarea></div>
+    <button class="msave" onclick="saveDayData()">Salva giornata ✓</button>
+    <button class="mcan" onclick="closeOv()">Annulla</button>
+  </div>
+</div>
+
+<script>
+// ═══════════ PASSWORD ═══════════
+function checkPw(){
+  const v=document.getElementById('pw-inp').value;
+  const err=document.getElementById('pw-err');
+  const inp=document.getElementById('pw-inp');
+  if(v==='Vev0druj'){
+    // Hide password, show app
+    document.getElementById('pw').style.display='none';
+    const app=document.getElementById('app');
+    app.classList.add('show');
+    // Init everything
+    initAll();
+  } else {
+    err.style.display='block';
+    inp.value='';
+    inp.style.borderColor='#e05555';
+    setTimeout(()=>{inp.style.borderColor='#272727';err.style.display='none';},1500);
+  }
+}
+// Allow Enter key
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('pw-inp').addEventListener('keydown',e=>{
+    if(e.key==='Enter')checkPw();
+  });
+  setTimeout(()=>document.getElementById('pw-inp').focus(),200);
+});
+
+// ═══════════ INIT ALL — called after password ═══════════
+function initAll(){
+  // Workout tabs
+  document.querySelectorAll('.wt').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.wt').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.wd').forEach(d=>d.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('d-'+this.dataset.d).classList.add('active');
+      this.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    });
+  });
+  // Touch scroll fix
+  document.body.addEventListener('touchmove',e=>{
+    if(!e.target.closest('.scroll,.wd,.cmsg,.caltl,.wtabs,.modal,.combos,.qps'))
+      e.preventDefault();
+  },{passive:false});
+  // Set first screen active
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-workout').classList.add('active');
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nb-workout').classList.add('active');
+  // Init modules
+  initW();
+  initCal();
+  renderCal();
+  populateExSel();
+  buildProg();
+  updateProgStats();
+}
+
+// ═══════════ CONSTANTS ═══════════
+const ALL_EX=[
+  {id:'chestpress',name:'Chest Press'},{id:'pancaincl',name:'Panca inclinata'},
+  {id:'shoulderpress',name:'Shoulder Press'},{id:'lateralraise',name:'Lateral Raise manubri'},
+  {id:'cabletric',name:'Cable Tricipiti PD'},{id:'frenchpress',name:'French Press'},
+  {id:'latmachine',name:'Lat Machine'},{id:'pulley',name:'Pulley basso'},
+  {id:'onearmrow',name:'One Arm Row'},{id:'curl',name:'Curl bilanciere'},
+  {id:'cablecurl',name:'Cable Curl'},{id:'spidercurl',name:'Spider Curl'},
+  {id:'facepull',name:'Face Pull'},{id:'legpress',name:'Leg Press'},
+  {id:'hacksquat',name:'Hack Squat'},{id:'legcurl',name:'Leg Curl'},
+  {id:'lunge',name:'Dumbbell Lunge'},{id:'lateralcable',name:'Lateral Raise cavi'},
+];
+const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const DAYS=['Do','Lu','Ma','Me','Gi','Ve','Sa'];
+const SYS=`Sei l'assistente personale di Manuel per fitness e nutrizione. Rispondi sempre in italiano.
+Manuel: 18 anni, 70kg, 185cm. Obiettivo massa muscolare, focus schiena e bicipiti.
+Scheda Push/Pull/Legs (Lun/Mer/Ven). Orari scolastici: sveglia 5:20, palestra 18-19:20.
+Nutrizione: 140-160g prot/giorno, senza pesce/latte, creatina 5g/giorno.
+Sii conciso, pratico e incoraggiante.`;
+
+const S={water:{date:td(),ml:0,log:[],target:2500},exLogs:{},days:{}};
+let calDate=td();
+let modalExs=[];
+let chatHist=[];
+
+function td(){return new Date().toISOString().split('T')[0];}
+function nowT(){const n=new Date();return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');}
+function fmtD(s){if(!s)return'';const[y,m,d]=s.split('-');return`${parseInt(d)} ${MONTHS[parseInt(m)-1]} ${y}`;}
+
+// ═══════════ NAVIGATION ═══════════
+function switchS(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
+  const sc=document.getElementById('sc-'+id);
+  sc.offsetHeight;
+  sc.classList.add('active');
+  btn.classList.add('active');
+  sc.querySelectorAll('.scroll,.cmsg').forEach(el=>el.scrollTop=0);
+  if(id==='water')renderW();
+  if(id==='cal')renderCal();
+  if(id==='prog')updateProgStats();
+}
+
+// ═══════════ VIDEO ═══════════
+function toggleV(btn,src){
+  const box=btn.nextElementSibling;
+  const open=box.style.display==='block';
+  if(open){
+    box.style.display='none';
+    const v=box.querySelector('video');
+    if(v){v.pause();v.src='';}
+    btn.textContent='▶ Guarda come si fa';
+  } else {
+    box.style.display='block';
+    box.innerHTML='';
+    const v=document.createElement('video');
+    v.src=src;
+    v.controls=true;
+    v.setAttribute('playsinline','');
+    v.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;background:#000;';
+    box.appendChild(v);
+    v.play().catch(()=>{});
+    btn.textContent='✕ Chiudi video';
+  }
+}
+
+// ═══════════ SEASON ═══════════
+function switchSeason(id,btn){
+  document.querySelectorAll('.mpl').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sbt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pl-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════ WATER ═══════════
+function initW(){if(S.water.date!==td())S.water={date:td(),ml:0,log:[],target:S.water.target||2500};renderW();}
+function setWT(t){S.water.target=t;document.getElementById('wtlbl').textContent=(t/1000).toFixed(1)+' L';document.getElementById('wt25').classList.toggle('active',t===2500);document.getElementById('wt30').classList.toggle('active',t===3000);renderW();}
+function renderW(){
+  const{ml,target}=S.water;
+  const L=(ml/1000).toFixed(1),pct=Math.min(100,Math.round(ml/target*100));
+  const el=document.getElementById('wamt');
+  el.textContent=L+' L';el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),280);
+  document.getElementById('wpct').textContent=pct+'%';
+  document.getElementById('wbar').style.width=pct+'%';
+  const gc=document.getElementById('wgl');gc.innerHTML='';
+  const G=10,filled=Math.round(ml/target*G);
+  for(let i=0;i<G;i++){
+    const g=document.createElement('div');g.className='wg'+(i<filled?' on':'');g.textContent='🥛';
+    g.onclick=()=>{const t2=Math.round((i+1)/G*target);const diff=t2-S.water.ml;if(diff>0)addW(diff);else{S.water.ml=t2;renderW();renderWLog();}};
+    gc.appendChild(g);
+  }
+  renderWLog();
+}
+function addW(ml){S.water.ml=Math.min(S.water.target*1.6,S.water.ml+ml);S.water.log.push({t:nowT(),ml});renderW();}
+function resetW(){S.water.ml=0;S.water.log=[];renderW();}
+function renderWLog(){
+  const log=document.getElementById('wlog'),empty=document.getElementById('wempty');
+  log.querySelectorAll('.wli').forEach(i=>i.remove());
+  if(!S.water.log.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  [...S.water.log].reverse().forEach(e=>{const d=document.createElement('div');d.className='wli';d.innerHTML=`<span class="wlt">${e.t}</span><span class="wlv">+${e.ml} ml</span>`;log.insertBefore(d,empty);});
+}
+
+// ═══════════ CALENDAR ═══════════
+function initCal(){
+  const ys=document.getElementById('cal-y'),ms=document.getElementById('cal-m');
+  const now=new Date();
+  for(let y=2025;y<=2030;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;ys.appendChild(o);}
+  MONTHS.forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=m;if(i+1===now.getMonth()+1)o.selected=true;ms.appendChild(o);});
+  ys.onchange=ms.onchange=()=>{const y=parseInt(ys.value),m=parseInt(ms.value);calDate=`${y}-${String(m).padStart(2,'0')}-01`;renderCal();};
+}
+function jumpToday(){const now=new Date();calDate=td();document.getElementById('cal-y').value=now.getFullYear();document.getElementById('cal-m').value=now.getMonth()+1;renderCal();}
+function renderCal(){
+  const tl=document.getElementById('caltl');tl.innerHTML='';
+  const[sy,sm]=calDate.split('-').map(Number);
+  const days=new Date(sy,sm,0).getDate();
+  const todayStr=td();
+  const selDay=Math.min(parseInt(calDate.split('-')[2]||1),days);
+  calDate=`${sy}-${String(sm).padStart(2,'0')}-${String(selDay).padStart(2,'0')}`;
+  for(let d=1;d<=days;d++){
+    const ds=`${sy}-${String(sm).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dt=new Date(ds+'T12:00:00');
+    const isToday=ds===todayStr,isSel=ds===calDate;
+    const hasData=!!(S.days[ds]&&(S.days[ds].peso||S.days[ds].acqua||(S.days[ds].exs&&S.days[ds].exs.length)));
+    const btn=document.createElement('div');
+    btn.className='calday'+(isToday?' today':'')+(isSel?' sel':'')+(hasData?' has':'');
+    btn.innerHTML=`<span class="cdow">${DAYS[dt.getDay()]}</span><span class="cnum">${d}</span><span class="cdot"></span>`;
+    btn.onclick=()=>{calDate=ds;renderCal();};
+    tl.appendChild(btn);
+  }
+  setTimeout(()=>{const sel=tl.querySelector('.sel');if(sel)sel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},60);
+  renderDayDetail(calDate);
+}
+function renderDayDetail(ds){
+  const dd=document.getElementById('ddet');
+  const D=S.days[ds]||{};
+  const isToday=ds===td();
+  let h=`<div class="ddate">${fmtD(ds)}${isToday?' · Oggi':''}</div>`;
+  h+=`<div class="dgrid"><div class="dstat"><div class="dval" style="color:var(--green)">${D.peso||'—'}<span style="font-size:10px;color:var(--g)">${D.peso?' kg':''}</span></div><div class="dlbl">Peso</div></div><div class="dstat"><div class="dval" style="color:var(--blue)">${D.acqua?(D.acqua/1000).toFixed(1):'—'}<span style="font-size:10px;color:var(--g)">${D.acqua?' L':''}</span></div><div class="dlbl">Acqua</div></div><div class="dstat"><div class="dval" style="color:var(--yellow)">${D.exs&&D.exs.length?D.exs.length:'—'}</div><div class="dlbl">Esercizi</div></div></div>`;
+  if(D.exs&&D.exs.length){h+=`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--lg);text-transform:uppercase;letter-spacing:.12em;margin:8px 0 5px;">Esercizi</div><div class="dexs">`;D.exs.forEach(ex=>{h+=`<div class="dex"><span class="dexn">${ex.name}</span><span class="dexv">${ex.sets||3}×${ex.reps} · ${ex.kg}kg</span></div>`;});h+=`</div>`;}
+  if(D.note)h+=`<div class="dnote">📝 ${D.note}</div>`;
+  if(!D.peso&&!D.acqua&&(!D.exs||!D.exs.length)&&!D.note)h+=`<div class="dempty">Nessun dato per questo giorno</div>`;
+  h+=`<button class="dadd" onclick="openOv('${ds}')">✏️ ${(D.peso||D.acqua)?'Modifica':'Aggiungi'} dati giornata</button>`;
+  dd.innerHTML=h;
+}
+
+// ═══════════ MODAL ═══════════
+function populateExSel(){
+  const sel=document.getElementById('md-exsel');
+  ALL_EX.forEach(ex=>{const o=document.createElement('option');o.value=ex.name;o.textContent=ex.name;sel.appendChild(o);});
+}
+function openOv(ds){
+  const D=S.days[ds]||{};
+  document.getElementById('ov-title').textContent=fmtD(ds);
+  document.getElementById('md-peso').value=D.peso||'';
+  document.getElementById('md-acqua').value=D.acqua||'';
+  document.getElementById('md-note').value=D.note||'';
+  modalExs=D.exs?JSON.parse(JSON.stringify(D.exs)):[];
+  renderModalExs();
+  document.getElementById('md-exsel').value='';
+  document.getElementById('md-kg').value='';
+  document.getElementById('md-reps').value='';
+  document.getElementById('md-sets').value='';
+  document.getElementById('ov-day').classList.add('open');
+}
+function closeOv(){document.getElementById('ov-day').classList.remove('open');}
+function addDayEx(){
+  const sel=document.getElementById('md-exsel');
+  const name=sel.value;
+  const kg=parseFloat(document.getElementById('md-kg').value);
+  const reps=parseInt(document.getElementById('md-reps').value);
+  const sets=parseInt(document.getElementById('md-sets').value)||3;
+  if(!name){alert('Seleziona un esercizio');return;}
+  if(!kg||kg<=0){alert('Inserisci i kg');return;}
+  if(!reps||reps<=0){alert('Inserisci le reps');return;}
+  modalExs.push({name,kg,reps,sets});
+  sel.value='';document.getElementById('md-kg').value='';document.getElementById('md-reps').value='';document.getElementById('md-sets').value='';
+  renderModalExs();
+  const btn=document.getElementById('addbtn');btn.textContent='✓';btn.style.background='#27ae60';setTimeout(()=>{btn.textContent='+';btn.style.background='var(--green)';},700);
+}
+function renderModalExs(){
+  const c=document.getElementById('md-exlist');c.innerHTML='';
+  modalExs.forEach((ex,i)=>{const d=document.createElement('div');d.className='exrow';d.innerHTML=`<span>${ex.name} · <strong>${ex.sets}×${ex.reps} · ${ex.kg}kg</strong></span><button class="exrow-del" onclick="removeEx(${i})">✕</button>`;c.appendChild(d);});
+}
+function removeEx(i){modalExs.splice(i,1);renderModalExs();}
+function saveDayData(){
+  const peso=parseFloat(document.getElementById('md-peso').value)||null;
+  const acqua=parseInt(document.getElementById('md-acqua').value)||null;
+  const note=document.getElementById('md-note').value.trim();
+  S.days[calDate]={peso,acqua,exs:JSON.parse(JSON.stringify(modalExs)),note};
+  modalExs.forEach(ex=>{const found=ALL_EX.find(e=>e.name===ex.name);if(found){if(!S.exLogs[found.id])S.exLogs[found.id]=[];const idx=S.exLogs[found.id].findIndex(l=>l.date===calDate);const entry={date:calDate,kg:ex.kg,reps:ex.reps,sets:ex.sets,id:calDate+found.id};if(idx>=0)S.exLogs[found.id][idx]=entry;else S.exLogs[found.id].unshift(entry);}});
+  closeOv();renderCal();updateProgStats();
+}
+
+// ═══════════ PROGRESS ═══════════
+function buildProg(){
+  const c=document.getElementById('prog-list');if(!c||c.children.length>0)return;
+  ALL_EX.forEach(ex=>{
+    const div=document.createElement('div');div.className='ec';div.id='ec-'+ex.id;
+    div.innerHTML=`<div class="ech" onclick="togEC('${ex.id}')"><div><div class="ecn">${ex.name}</div><div class="ecl" id="ecl-${ex.id}">ultima: —</div></div><span style="color:var(--g);font-size:14px;transition:transform .2s" id="eca-${ex.id}">›</span></div><div class="ecb"><div class="ecinp"><div><div class="ecll">Data</div><input type="date" id="ei-${ex.id}-d" class="eci" style="font-size:9px;"></div><div><div class="ecll">Kg</div><input type="number" id="ei-${ex.id}-k" class="eci" placeholder="—"></div><div><div class="ecll">Reps</div><input type="number" id="ei-${ex.id}-r" class="eci" placeholder="—"></div></div><button class="ecsave" onclick="saveEx('${ex.id}')">+ Aggiungi sessione</button><div id="ecd-${ex.id}" style="margin-top:6px;"></div></div>`;
+    c.appendChild(div);renderExLog(ex.id);
+  });
+}
+function togEC(id){const c=document.getElementById('ec-'+id),a=document.getElementById('eca-'+id);const open=c.classList.toggle('open');a.style.transform=open?'rotate(90deg)':'';if(open){const di=document.getElementById('ei-'+id+'-d');if(di)di.value=td();}}
+function saveEx(id){
+  const date=document.getElementById('ei-'+id+'-d').value;
+  const kg=parseFloat(document.getElementById('ei-'+id+'-k').value);
+  const reps=parseInt(document.getElementById('ei-'+id+'-r').value);
+  if(!date||!kg||!reps){alert('Compila data, kg e reps');return;}
+  if(!S.exLogs[id])S.exLogs[id]=[];
+  S.exLogs[id].unshift({date,kg,reps,id:Date.now()});
+  document.getElementById('ei-'+id+'-k').value='';document.getElementById('ei-'+id+'-r').value='';
+  renderExLog(id);updateProgStats();
+}
+function renderExLog(id){
+  const logs=S.exLogs[id]||[];
+  const c=document.getElementById('ecd-'+id),lbl=document.getElementById('ecl-'+id);
+  if(!c||!lbl)return;c.innerHTML='';
+  if(!logs.length){lbl.textContent='ultima: —';return;}
+  lbl.textContent=`ultima: ${logs[0].kg}kg × ${logs[0].reps} · ${fmtD(logs[0].date)}`;
+  logs.forEach(l=>{const row=document.createElement('div');row.className='ecrow';row.innerHTML=`<span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--g);">${fmtD(l.date)}</span><span style="font-weight:600;font-size:10px;">${l.kg}kg × ${l.reps}</span><button class="ecdel" onclick="delEx('${id}',${l.id})">✕</button>`;c.appendChild(row);});
+}
+function delEx(id,lid){S.exLogs[id]=(S.exLogs[id]||[]).filter(l=>l.id!==lid);renderExLog(id);updateProgStats();}
+function updateProgStats(){
+  const pesoVals=Object.entries(S.days).filter(([,d])=>d.peso).sort((a,b)=>b[0].localeCompare(a[0])).map(([,d])=>d.peso);
+  const el=document.getElementById('pp-peso'),dl=document.getElementById('pp-d');
+  if(!el)return;
+  if(!pesoVals.length){el.innerHTML='—<span class="psu">kg</span>';if(dl){dl.textContent='nessun dato';dl.className='psd dz';}}
+  else{el.innerHTML=pesoVals[0]+'<span class="psu">kg</span>';if(dl&&pesoVals.length>=2){const diff=(pesoVals[0]-pesoVals[1]).toFixed(1);dl.textContent=(diff>0?'+':'')+diff+' kg';dl.className='psd '+(diff>0?'dp':diff<0?'dn':'dz');}else if(dl){dl.textContent='prima misurazione';dl.className='psd dz';}}
+  let tot=0;Object.values(S.exLogs).forEach(l=>tot+=l.length);
+  const ss=document.getElementById('pp-sess');if(ss)ss.textContent=tot;
+  ALL_EX.forEach(ex=>renderExLog(ex.id));
+}
+
+// ═══════════ AI CHAT ═══════════
+async function sendChat(){
+  const inp=document.getElementById('cin'),msg=inp.value.trim();
+  if(!msg)return;
+  addMsg(msg,'u');inp.value='';inp.style.height='';
+  chatHist.push({role:'user',content:msg});
+  document.getElementById('csnd').disabled=true;
+  const typ=addTyp();
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1024,system:SYS,messages:chatHist})});
+    const data=await r.json();typ.remove();
+    if(!r.ok||data.type==='exceeded_limit'){document.getElementById('limit-banner').style.display='block';addMsg('⏳ Limite API raggiunto. Si resetta automaticamente. Riprova più tardi!','a');}
+    else{const reply=(data.content&&data.content.find(b=>b.type==='text')?.text)||'Nessuna risposta.';chatHist.push({role:'assistant',content:reply});addMsg(reply,'a');}
+  }catch(e){typ.remove();addMsg('⚠️ Errore di rete. Controlla la connessione.','a');}
+  document.getElementById('csnd').disabled=false;
+}
+function addMsg(text,role){const msgs=document.getElementById('cmsg');const div=document.createElement('div');div.className='msg '+role;div.innerHTML=`<div class="bub">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div><div class="mt2">${nowT()}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;}
+function addTyp(){const msgs=document.getElementById('cmsg');const div=document.createElement('div');div.className='msg a';div.innerHTML='<div class="typ"><div class="td"></div><div class="td"></div><div class="td"></div></div>';msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;}
+function ck(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function autoR(el){el.style.height='';el.style.height=Math.min(el.scrollHeight,85)+'px';}
+function sendQP(t){document.getElementById('cin').value=t;document.getElementById('qps').style.display='none';sendChat();}
+
+// ═══════════ FOOD AI ═══════════
+let fB64=null,fType=null;
+function prevF(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    fB64=ev.target.result.split(',')[1];fType=file.type||'image/jpeg';
+    const prev=document.getElementById('fprev');prev.src=ev.target.result;prev.style.display='block';
+    document.getElementById('uarea').classList.add('has');
+    document.getElementById('uarea').innerHTML='<div class="upload-i">✅</div><div class="upload-l"><strong>Foto caricata</strong> · Tocca per cambiare</div>';
+    document.getElementById('abtn').disabled=false;
+    document.getElementById('fres').style.display='none';
+    document.getElementById('flimit').style.display='none';
+  };
+  r.readAsDataURL(file);
+}
+async function analyzeF(){
+  if(!fB64)return;
+  const btn=document.getElementById('abtn');btn.disabled=true;btn.textContent='⏳ Analisi in corso…';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:fType,data:fB64}},{type:'text',text:`Analizza questo pasto. Rispondi SOLO con JSON valido senza nulla prima o dopo:\n{"nome":"nome pasto","calorie":500,"proteine":30,"carboidrati":60,"grassi":15,"dettagli":"descrizione breve in italiano max 60 parole"}\nTutti i numeri devono essere interi positivi.`}]}]})});
+    const data=await r.json();
+    if(!r.ok||data.type==='exceeded_limit'){document.getElementById('flimit').style.display='block';}
+    else{
+      const tb=data.content&&data.content.find(b=>b.type==='text');
+      if(!tb)throw new Error('Nessuna risposta');
+      const jm=tb.text.trim().match(/\{[\s\S]*\}/);
+      if(!jm)throw new Error('Formato non valido');
+      const p=JSON.parse(jm[0]);
+      showFRes({nome:String(p.nome||'Pasto'),calorie:Math.max(0,parseInt(p.calorie)||0),proteine:Math.max(0,parseInt(p.proteine)||0),carboidrati:Math.max(0,parseInt(p.carboidrati)||0),grassi:Math.max(0,parseInt(p.grassi)||0),dettagli:String(p.dettagli||'')});
+    }
+  }catch(e){document.getElementById('fres-t').textContent='Errore';document.getElementById('fres-g').innerHTML='';document.getElementById('fres-d').textContent='Riprova con una foto più chiara.';document.getElementById('fres').style.display='block';}
+  btn.disabled=false;btn.textContent='🔍 Analizza di nuovo';
+}
+function showFRes(d){
+  document.getElementById('fres-t').textContent=d.nome;
+  const mac=[{l:'Calorie',v:d.calorie,u:'kcal',c:'var(--yellow)'},{l:'Proteine',v:d.proteine,u:'g',c:'var(--green)'},{l:'Carboidrati',v:d.carboidrati,u:'g',c:'var(--blue)'},{l:'Grassi',v:d.grassi,u:'g',c:'var(--red)'}];
+  document.getElementById('fres-g').innerHTML=mac.map(m=>`<div class="frm"><div class="frml">${m.l}</div><div class="frmv" style="color:${m.c}">${m.v}<span class="frmu">${m.u}</span></div></div>`).join('');
+  document.getElementById('fres-d').textContent=d.dettagli;
+  const res=document.getElementById('fres');res.style.display='block';res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+</script>
+</body>
+</html>
